@@ -1,11 +1,31 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: pizzadb
+      POSTGRES_USER: postgresuser
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+
   web:
     build: .
-    ports:
-      - "8000:8000"
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
-    command: python manage.py runserver 0.0.0.0:8000
-  
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_NAME=pizzadb
+      - DB_USER=postgresuser
+      - DB_PASSWORD=postgrespassword
+      - DB_HOST=db
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
